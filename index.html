@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mamun's Personal Q&A Chatbot</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
+    #chat { background: #fff; padding: 15px; border-radius: 8px; max-width: 500px; margin: auto; height: 400px; overflow-y: auto; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    .message { margin: 8px 0; }
+    .user { color: #111; }
+    .bot { color: #007acc; }
+    #input-area { display: flex; max-width: 500px; margin: 10px auto; gap: 10px; }
+    input { flex: 1; padding: 10px; border-radius: 4px; border: 1px solid #ccc; }
+    button { padding: 10px 20px; background: #007acc; color: #fff; border: none; border-radius: 4px; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+  <div style="max-width: 500px; margin: auto; text-align: center;">
+    <h2>👋 Welcome to Mamun's Personal Chatbot</h2> <!-- ✅ THIS LINE ADDED -->
+  </div>
+
+  <div id="chat"></div>
+
+  <div id="input-area">
+    <input type="text" id="userInput" placeholder="Ask me something...">
+    <button onclick="sendMessage()">Send</button>
+  </div>
+
+<script>
+const personalQA = [
+  { keywords: ["your name"], answer: "My name is Mamun Cool." },
+  { keywords: ["what do you do", "your job"], answer: "I'm a professional graphic designer, specializing in restaurant menu and logo design." },
+  { keywords: ["where do you work", "fiverr"], answer: "I work as a freelancer on Fiverr since 2020 with over 2000 projects completed." },
+  { keywords: ["where do you live", "your location"], answer: "I live in a rural village in Bangladesh, planning to move to the city for better schools and hospitals for my daughter." },
+  { keywords: ["daughter"], answer: "My daughter's name is Noboni." },
+  { keywords: ["tools", "software"], answer: "I use Adobe Illustrator, Photoshop, Figma, and VS Code for my work." },
+  { keywords: ["web development", "learning"], answer: "Yes, I’m learning web development including HTML, CSS, and responsive design." },
+  { keywords: ["app", "freano"], answer: "I’m developing an app called Freano for freelancer money management." }
+];
+
+const chat = document.getElementById('chat');
+const userInput = document.getElementById('userInput');
+
+async function sendMessage() {
+  const input = userInput.value.trim();
+  if (input === '') return;
+
+  appendMessage('You', input, 'user');
+  userInput.value = '';
+
+  const answer = getPersonalAnswer(input);
+  if (answer) {
+    appendMessage('Bot', answer, 'bot');
+  } else {
+    appendMessage('Bot', 'Thinking... 🤔', 'bot');
+    const aiAnswer = await getAIAnswer(input);
+    updateLastBotMessage(aiAnswer);
+  }
+}
+
+function getPersonalAnswer(input) {
+  const lowerInput = input.toLowerCase();
+  for (const qa of personalQA) {
+    if (qa.keywords.some(keyword => lowerInput.includes(keyword))) {
+      return qa.answer;
+    }
+  }
+  return null;
+}
+
+function appendMessage(sender, text, className) {
+  const div = document.createElement('div');
+  div.classList.add('message', className);
+  div.innerHTML = `<b>${sender}:</b> ${text}`;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function updateLastBotMessage(newText) {
+  const botMessages = [...document.querySelectorAll('.bot')];
+  if (botMessages.length) {
+    botMessages[botMessages.length - 1].innerHTML = `<b>Bot:</b> ${newText}`;
+  }
+  chat.scrollTop = chat.scrollHeight;
+}
+
+async function getAIAnswer(question) {
+  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer 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" // ⬅️ Put your OpenRouter API key here
+    },
+    body: JSON.stringify({
+      model: "openai/gpt-3.5-turbo",
+      messages: [{ role: "user", content: question }],
+      temperature: 0.7
+    })
+  });
+
+  const data = await response.json();
+  try {
+    return data.choices[0].message.content.trim();
+  } catch (e) {
+    return "Sorry, I couldn’t get an answer right now.";
+  }
+}
+</script>
+
+</body>
+</html>
