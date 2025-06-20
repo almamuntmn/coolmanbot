@@ -29,8 +29,24 @@
   </div>
 
 <script>
+// ✅ Personal information to inject for context
+const myProfile = `
+You are a personal assistant for Mamun Cool.
+Here’s information about Mamun:
+- Name: Mamun Cool
+- Profession: Graphic Designer (specializes in restaurant menus and logos)
+- Works on: Fiverr since 2020, completed over 2000 projects.
+- Location: Rural village, Bangladesh. Planning to move to the city for better schools and hospitals for his daughter.
+- Tools used: Adobe Illustrator, Photoshop, Figma, VS Code.
+- Learning: Web development (HTML, CSS, responsive design).
+- App development: Building an app called Freano for freelancer money management.
+`;
+
+// ✅ API Key (regenerate for security later)
+const API_KEY = 'AIzaSyCW51UCO0WyeYq9KFTIWA53TFAjMG2ORZ4';
+
 const personalQA = [
-  { keywords: ["What is your name"], answer: "My name is Mamun Cool." },
+  { keywords: ["your name"], answer: "My name is Mamun Cool." },
   { keywords: ["what do you do", "your job"], answer: "I'm a professional graphic designer, specializing in restaurant menu and logo design." },
   { keywords: ["where do you work", "fiverr"], answer: "I work as a freelancer on Fiverr since 2020 with over 2000 projects completed." },
   { keywords: ["where do you live", "your location"], answer: "I live in a rural village in Bangladesh, planning to move to the city for better schools and hospitals for my daughter." },
@@ -42,7 +58,7 @@ const personalQA = [
 const chat = document.getElementById('chat');
 const userInput = document.getElementById('userInput');
 
-// ✅ Enter key support
+// ✅ Enable Enter key to send messages
 userInput.addEventListener("keydown", function(event) {
   if (event.key === "Enter") {
     event.preventDefault();
@@ -93,8 +109,8 @@ function updateLastBotMessage(newText) {
   chat.scrollTop = chat.scrollHeight;
 }
 
+// ✅ Gemini API call with personal context injected
 async function getGeminiAnswer(question) {
-  const API_KEY = 'AIzaSyCW51UCO0WyeYq9KFTIWA53TFAjMG2ORZ4';
   const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
 
   try {
@@ -102,7 +118,7 @@ async function getGeminiAnswer(question) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: question }] }]
+        contents: [{ parts: [{ text: myProfile + "\nUser question: " + question }] }]
       })
     });
 
@@ -113,7 +129,7 @@ async function getGeminiAnswer(question) {
       return "Sorry, I couldn't find an answer. Try again.";
     }
   } catch (error) {
-    return "Error connecting to Gemini API.";
+    return "❌ Error connecting to Gemini API.";
   }
 }
 </script>
